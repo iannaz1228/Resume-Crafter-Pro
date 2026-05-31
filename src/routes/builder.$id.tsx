@@ -160,8 +160,8 @@ function Builder() {
 
   const printPDF = () => window.print();
 
-  const previewWidth = 820; // always full A4 width; scale controls zoom
-  const scale = size === "desktop" ? 0.78 : size === "tablet" ? 0.60 : 0.42;
+  const previewWidth = 820; // full A4 width for scaling calculation
+  const scale = size === "desktop" ? 0.78 : size === "tablet" ? 0.60 : 0.55; // increased mobile scale from 0.42 to 0.55
 
   return (
     <div className="min-h-screen bg-background bg-gradient-hero">
@@ -212,7 +212,7 @@ function Builder() {
       </div>
 
       {/* Workspace */}
-      <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[480px_1fr]">
+      <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-3 px-2 py-6 sm:gap-6 sm:px-4 lg:grid-cols-[480px_1fr]">
         {/* Left panel */}
         <div className="no-print space-y-3">
           <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
