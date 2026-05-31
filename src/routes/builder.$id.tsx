@@ -254,6 +254,9 @@ function Builder() {
         {/* Right preview */}
         <div className="relative">
           <div className="max-h-[calc(100vh-180px)] overflow-y-auto rounded-2xl glass p-4 shadow-elegant">
+            <div className="mb-3 text-center text-xs text-muted-foreground">
+              A4 · {resume.customization.template.replace(/-/g, " ")} · Print preview is exact
+            </div>
             <div className="mx-auto flex items-start justify-center">
               <motion.div
                 key={size}
@@ -269,10 +272,6 @@ function Builder() {
               >
                 <Template resume={resume} />
               </motion.div>
-
-              <div className="mt-3 text-center text-xs text-muted-foreground">
-                A4 · {resume.customization.template.replace(/-/g, " ")} · Print preview is exact
-              </div>
             </div>
           </div>
         </div>
