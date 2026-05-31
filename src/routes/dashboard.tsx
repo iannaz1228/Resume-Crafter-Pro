@@ -7,6 +7,7 @@ import { useRef } from "react";
 import { toast } from "sonner";
 import type { Resume } from "@/lib/resume-types";
 import { usePersistHydration } from "@/hooks/use-persist-hydration";
+import { BuyMeCoffee } from "@/components/BuyMeCoffee";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -42,6 +43,7 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-background bg-gradient-hero">
       <SiteNav />
+      <BuyMeCoffee />
       <main className="mx-auto max-w-7xl px-6 py-12">
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-4">

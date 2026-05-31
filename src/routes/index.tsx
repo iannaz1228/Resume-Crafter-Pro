@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
 import { Footer } from "@/components/Footer";
+import { BuyMeCoffee } from "@/components/BuyMeCoffee";
 import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
 import { UseTemplateButton } from "@/components/UseTemplateButton";
 import { TEMPLATE_LIST, TEMPLATE_MAP } from "@/components/resume-templates";
@@ -251,6 +252,7 @@ function Landing() {
         </div>
       </section>
 
+      <BuyMeCoffee />
       <Footer />
 
       {previewModal && (
