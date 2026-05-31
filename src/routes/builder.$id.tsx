@@ -270,8 +270,9 @@ function Builder() {
                 <Template resume={resume} />
               </motion.div>
 
-            <div className="mt-3 text-center text-xs text-muted-foreground">
-              A4 · {resume.customization.template.replace(/-/g, " ")} · Print preview is exact
+              <div className="mt-3 text-center text-xs text-muted-foreground">
+                A4 · {resume.customization.template.replace(/-/g, " ")} · Print preview is exact
+              </div>
             </div>
           </div>
         </div>
