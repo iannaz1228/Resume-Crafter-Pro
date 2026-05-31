@@ -160,29 +160,31 @@ export const CustomizationPanel = memo(function CustomizationPanel({ resume, upd
     <div className="space-y-3">
       {/* ── Template ── */}
       <Accordion title="Template" defaultOpen>
-        <div className="grid grid-cols-2 gap-2">
-          {TEMPLATE_LIST.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => {
-                const defaults = TEMPLATE_DEFAULT_COLORS[t.id];
-                update((r) => ({
-                  ...r,
-                  customization: { ...r.customization, template: t.id, ...(defaults ?? {}) },
-                }));
-                setActivePreset("template-default");
-              }}
-              className={`rounded-lg border p-3 text-left text-xs transition-all ${
-                c.template === t.id
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:border-primary/50"
-              }`}
-            >
-              <div className="font-display text-sm font-semibold">{t.name}</div>
-              <div className="text-muted-foreground">{t.tag}</div>
-            </button>
-          ))}
+        <div className="max-h-[60vh] overflow-y-auto">
+          <div className="grid grid-cols-2 gap-2">
+            {TEMPLATE_LIST.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => {
+                  const defaults = TEMPLATE_DEFAULT_COLORS[t.id];
+                  update((r) => ({
+                    ...r,
+                    customization: { ...r.customization, template: t.id, ...(defaults ?? {}) },
+                  }));
+                  setActivePreset("template-default");
+                }}
+                className={`rounded-lg border p-3 text-left text-xs transition-all ${
+                  c.template === t.id
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/50"
+                }`}
+              >
+                <div className="font-display text-sm font-semibold">{t.name}</div>
+                <div className="text-muted-foreground">{t.tag}</div>
+              </button>
+            ))}
+          </div>
         </div>
       </Accordion>
 
