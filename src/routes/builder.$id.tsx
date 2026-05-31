@@ -160,8 +160,8 @@ function Builder() {
 
   const printPDF = () => window.print();
 
-  const previewWidth = size === "desktop" ? 820 : size === "tablet" ? 600 : 380;
-  const scale = size === "desktop" ? 0.78 : size === "tablet" ? 0.62 : 0.42;
+  const previewWidth = 820; // always full A4 width; scale controls zoom
+  const scale = size === "desktop" ? 0.78 : size === "tablet" ? 0.60 : 0.42;
 
   return (
     <div className="min-h-screen bg-background bg-gradient-hero">
@@ -177,6 +177,7 @@ function Builder() {
             <input
               value={resume.name}
               onChange={(e) => update((r) => ({ ...r, name: e.target.value }))}
+              placeholder="Resume name"
               className="min-w-0 max-w-xs truncate rounded-md bg-transparent px-2 py-1 font-display font-semibold outline-none hover:bg-accent/30 focus:bg-card"
             />
             <span className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:inline-flex">
@@ -211,11 +212,10 @@ function Builder() {
       </div>
 
       {/* Workspace */}
-      <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-4 py-6 md:grid-cols-[480px_minmax(0,1fr)]">
-        {/* Left panel — sticky on large screens, fills remaining viewport height */}
-        <div className="no-print flex flex-col gap-3 md:sticky md:top-32 md:h-[calc(100vh-8.5rem)]">
-          {/* Tab switcher — never scrolls away */}
-          <div className="flex-shrink-0 flex gap-1 rounded-lg border border-border bg-card p-1">
+      <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[480px_1fr]">
+        {/* Left panel */}
+        <div className="no-print space-y-3">
+          <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
             <button
               type="button"
               onClick={() => setTab("content")}
@@ -232,8 +232,7 @@ function Builder() {
             </button>
           </div>
 
-          {/* Scrollable content — takes all remaining panel height */}
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-2 pb-8">
+          <div className="max-h-[calc(100vh-180px)] space-y-3 overflow-y-auto pr-1">
             {tab === "content" ? (
               <>
                 <PersonalSection resume={resume} update={update} />
@@ -253,32 +252,24 @@ function Builder() {
         </div>
 
         {/* Right preview */}
-        <div className="relative min-w-0 overflow-hidden">
-          <div className="sticky top-32">
-            <div className="rounded-2xl glass p-4 shadow-elegant">
-              {/* Clip box sized to the VISUAL (post-scale) dimensions — eliminates layout overflow */}
-              <div
-                className="mx-auto overflow-hidden"
+        <div className="relative">
+          <div className="max-h-[calc(100vh-180px)] overflow-y-auto rounded-2xl glass p-4 shadow-elegant">
+            <div className="mx-auto flex items-start justify-center">
+              <motion.div
+                key={size}
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
                 style={{
-                  width: previewWidth * scale,
-                  height: 297 * 3.78 * scale + 16,
+                  width: previewWidth,
+                  transform: `scale(${scale})`,
+                  transformOrigin: "top center",
+                  height: 297 * 3.78 * scale + 40,
                 }}
               >
-                <motion.div
-                  key={size}
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                  style={{
-                    width: previewWidth,
-                    transform: `scale(${scale})`,
-                    transformOrigin: "top left",
-                  }}
-                >
-                  <Template resume={resume} />
-                </motion.div>
-              </div>
-            </div>
+                <Template resume={resume} />
+              </motion.div>
+
             <div className="mt-3 text-center text-xs text-muted-foreground">
               A4 · {resume.customization.template.replace(/-/g, " ")} · Print preview is exact
             </div>

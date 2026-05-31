@@ -12,7 +12,9 @@
       "Bash(Remove-Item -Force \"d:\\\\resumecraft-pro\\\\electron-builder.config.cjs\" -ErrorAction SilentlyContinue)",
       "Bash(Remove-Item -Force \"d:\\\\resumecraft-pro\\\\src\\\\server.ts\" -ErrorAction SilentlyContinue)",
       "Bash(Remove-Item -Force \"d:\\\\resumecraft-pro\\\\src\\\\start.ts\" -ErrorAction SilentlyContinue)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Read(//d/resumecraft-pro-main/src/routes/**)",
+      "Read(//d/resumecraft-pro-main/src/components/**)"
     ]
   }
 }
