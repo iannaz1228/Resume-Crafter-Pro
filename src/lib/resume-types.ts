@@ -1,3 +1,5 @@
+import type { CoverLetterData } from "./cover-letter-types";
+
 export type PhotoShape = "circle" | "rounded" | "square";
 export type SkillStyle = "bars" | "percent" | "pills" | "text" | "bullets";
 export type TemplateId =
@@ -153,4 +155,7 @@ export interface Resume {
   sectionOrder: Array<keyof SectionVisibility>;
   visibility: SectionVisibility;
   customization: Customization;
+  coverLetter?: CoverLetterData;
 }
+
+export type { CoverLetterLayout, CoverLetterSettings, CoverLetterData } from "./cover-letter-types";

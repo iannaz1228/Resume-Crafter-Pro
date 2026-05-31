@@ -222,7 +222,7 @@ function renderSection(
     return (
       <section key={key}>
         <SectionTitle color={primary} variant={titleVariant}>Summary</SectionTitle>
-        <p style={{ whiteSpace: "pre-wrap" }}>{r.summary}</p>
+        <p className="resume-text-wrap">{r.summary}</p>
       </section>
     );
   }
@@ -244,7 +244,7 @@ function renderSection(
                 <div className="opacity-70">{e.location}</div>
               </div>
               {e.description && (
-                <p className="mt-1" style={{ whiteSpace: "pre-wrap" }}>{e.description}</p>
+                <p className="mt-1 resume-text-wrap">{e.description}</p>
               )}
             </div>
           ))}
@@ -294,7 +294,7 @@ function renderSection(
                   {[p.github, p.demo, p.website].filter(Boolean).join(" · ")}
                 </div>
               </div>
-              {p.description && <p className="mt-0.5">{p.description}</p>}
+              {p.description && <p className="mt-0.5 resume-text-wrap">{p.description}</p>}
               {p.tech && <div className="text-[11px] opacity-70 mt-0.5">Tech: {p.tech}</div>}
             </div>
           ))}

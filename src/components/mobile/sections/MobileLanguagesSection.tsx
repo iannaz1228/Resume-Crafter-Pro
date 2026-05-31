@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, Trash2, Globe2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Trash2, Globe2, ChevronDown } from "lucide-react";
 import type { Resume, LanguageItem } from "@/lib/resume-types";
 
 interface Props {
@@ -14,6 +14,83 @@ const PROFICIENCY_OPTIONS = [
   "Conversational",
   "Elementary",
 ];
+
+// Custom dropdown that never overflows the viewport.
+// Anchors right-0 (expands leftward) and flips upward when space is tight.
+function Picker({
+  value,
+  onChange,
+  options,
+  className = "",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const el = containerRef.current;
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setOpenUp(window.innerHeight - rect.bottom < 240);
+    }
+    const close = (e: MouseEvent | TouchEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    document.addEventListener("touchstart", close);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      document.removeEventListener("touchstart", close);
+    };
+  }, [open]);
+
+  return (
+    <div ref={containerRef} className={`relative ${className}`}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-1.5 rounded-xl border border-border bg-background px-2.5 py-2.5 text-xs font-medium outline-none focus:border-primary"
+      >
+        <span className="truncate">{value}</span>
+        <ChevronDown
+          className={`h-3 w-3 shrink-0 text-muted-foreground transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div
+          className={`absolute right-0 z-[100] w-44 overflow-hidden rounded-xl border border-border bg-card shadow-xl ${
+            openUp ? "bottom-full mb-1" : "top-full mt-1"
+          }`}
+        >
+          {options.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => {
+                onChange(opt);
+                setOpen(false);
+              }}
+              className={`flex w-full items-center px-3.5 py-2.5 text-left text-xs transition-colors ${
+                value === opt
+                  ? "bg-primary/10 font-semibold text-primary"
+                  : "text-foreground hover:bg-accent"
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function newItem(): LanguageItem {
   return {
@@ -60,24 +137,23 @@ export function MobileLanguagesSection({ resume, update }: Props) {
 
       {/* Add new language */}
       <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Add Language</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Add Language
+        </p>
         <div className="flex gap-2">
           <input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addItem()}
             placeholder="e.g. Spanish"
-            className="flex-1 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm outline-none placeholder:text-muted-foreground/40 focus:border-primary focus:ring-2 focus:ring-primary/10"
+            className="min-w-0 flex-1 rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm outline-none placeholder:text-muted-foreground/40 focus:border-primary focus:ring-2 focus:ring-primary/10"
           />
-          <select
+          <Picker
             value={newProf}
-            onChange={(e) => setNewProf(e.target.value)}
-            className="rounded-xl border border-border bg-background px-2.5 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-          >
-            {PROFICIENCY_OPTIONS.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
+            onChange={setNewProf}
+            options={PROFICIENCY_OPTIONS}
+            className="w-[130px] shrink-0"
+          />
         </div>
         <button
           type="button"
@@ -97,7 +173,7 @@ export function MobileLanguagesSection({ resume, update }: Props) {
           <p className="mt-1 text-xs text-muted-foreground/70">Use the form above to add languages</p>
         </div>
       ) : (
-        <div className="rounded-2xl border border-border bg-card divide-y divide-border overflow-hidden">
+        <div className="divide-y divide-border rounded-2xl border border-border bg-card [&>*:first-child]:rounded-t-2xl [&>*:last-child]:rounded-b-2xl">
           {resume.languages.map((item) => (
             <div key={item.id} className="flex items-center gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
@@ -108,19 +184,16 @@ export function MobileLanguagesSection({ resume, update }: Props) {
                   placeholder="Language"
                 />
               </div>
-              <select
+              <Picker
                 value={item.proficiency}
-                onChange={(e) => updateItem(item.id, { proficiency: e.target.value })}
-                className="shrink-0 rounded-lg border border-border bg-background px-2 py-1 text-xs outline-none focus:border-primary"
-              >
-                {PROFICIENCY_OPTIONS.map((p) => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
+                onChange={(v) => updateItem(item.id, { proficiency: v })}
+                options={PROFICIENCY_OPTIONS}
+                className="w-[120px] shrink-0"
+              />
               <button
                 type="button"
                 onClick={() => deleteItem(item.id)}
-                className="shrink-0 flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/30"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/30"
                 aria-label="Remove"
               >
                 <Trash2 className="h-3.5 w-3.5" />

@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-device";
 import { MobileEditor } from "@/components/mobile/MobileEditor";
-import { exportResumeToPDF } from "@/lib/export-pdf";
+import { exportResumeToPDF, exportCoverLetterToPDF, exportPackagePDF } from "@/lib/export-pdf";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -14,6 +14,8 @@ import {
   Monitor,
   Settings2,
   Layers,
+  FileText,
+  Package,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useResumeStore } from "@/store/resume-store";
@@ -31,6 +33,8 @@ import {
   ReferencesSection,
 } from "@/components/builder-sections";
 import { CustomizationPanel } from "@/components/CustomizationPanel";
+import { CoverLetterSection } from "@/components/CoverLetterSection";
+import { CoverLetterTemplate } from "@/components/cover-letter-templates";
 import { SiteNav } from "@/components/SiteNav";
 import { usePersistHydration } from "@/hooks/use-persist-hydration";
 
@@ -54,7 +58,7 @@ function Builder() {
   const resume = useResumeStore((s) => s.resumes[id]);
   const updateResume = useResumeStore((s) => s.updateResume);
 
-  const [tab, setTab] = useState<"content" | "design">("content");
+  const [tab, setTab] = useState<"content" | "design" | "cover-letter">("content");
   const [size, setSize] = useState<PreviewSize>("desktop");
   const [saved, setSaved] = useState(true);
 
@@ -76,6 +80,7 @@ function Builder() {
 
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(800);
+  const clipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = previewContainerRef.current;
@@ -98,6 +103,19 @@ function Builder() {
     return TEMPLATE_MAP[templateId] ?? TEMPLATE_MAP["modern-developer"];
   }, [templateId]);
 
+  const A4_PX = 820;
+  const A4_H_PX = 297 * 3.78; // ~1122px
+  const targetScale = size === "desktop" ? 0.78 : size === "tablet" ? 0.60 : 0.42;
+  const fitScale = Math.max(0.2, containerWidth / A4_PX);
+  const scale = Math.min(targetScale, fitScale);
+
+  useEffect(() => {
+    const el = clipRef.current;
+    if (!el) return;
+    el.style.setProperty("--clip-w", `${A4_PX * scale}px`);
+    el.style.setProperty("--clip-h", `${A4_H_PX * scale + 20}px`);
+  }, [scale, hydrated]);
+
   if (!hydrated) {
     return (
       <div className="min-h-screen bg-background bg-gradient-hero">
@@ -117,13 +135,15 @@ function Builder() {
   const exportPDF = () =>
     exportResumeToPDF("resume-print", `${resume.name.replace(/\s+/g, "_")}.pdf`);
 
+  const exportCL = () =>
+    exportCoverLetterToPDF(
+      "cover-letter-print",
+      `${resume.name.replace(/\s+/g, "_")}_CoverLetter.pdf`,
+    );
+
   const printPDF = () => window.print();
 
-  const A4_PX = 820;
-  const A4_H_PX = 297 * 3.78; // ~1122px
-  const targetScale = size === "desktop" ? 0.78 : size === "tablet" ? 0.60 : 0.42;
-  const fitScale = Math.max(0.2, containerWidth / A4_PX);
-  const scale = Math.min(targetScale, fitScale);
+  const isCoverLetter = tab === "cover-letter";
 
   return (
     <div className="min-h-screen bg-background bg-gradient-hero">
@@ -152,6 +172,7 @@ function Builder() {
               {(["desktop", "tablet", "mobile"] as const).map((s) => (
                 <button
                   key={s}
+                  type="button"
                   onClick={() => setSize(s)}
                   className={`grid h-7 w-7 place-items-center rounded-md ${size === s ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent/40"}`}
                   aria-label={s}
@@ -160,15 +181,42 @@ function Builder() {
                 </button>
               ))}
             </div>
-            <button type="button" onClick={printPDF} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-accent/30">
-              <Printer className="h-3.5 w-3.5" /> Print
-            </button>
-            <button
-              onClick={exportPDF}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow"
-            >
-              <Download className="h-3.5 w-3.5" /> Export PDF
-            </button>
+
+            {/* Resume export buttons — shown when NOT on cover letter tab */}
+            {!isCoverLetter && (
+              <>
+                <button type="button" onClick={printPDF} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-accent/30">
+                  <Printer className="h-3.5 w-3.5" /> Print
+                </button>
+                <button
+                  type="button"
+                  onClick={exportPDF}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow"
+                >
+                  <Download className="h-3.5 w-3.5" /> Export PDF
+                </button>
+              </>
+            )}
+
+            {/* Cover letter export buttons — shown on cover letter tab */}
+            {isCoverLetter && (
+              <>
+                <button
+                  type="button"
+                  onClick={exportCL}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium hover:bg-accent/30"
+                >
+                  <FileText className="h-3.5 w-3.5" /> Export Cover Letter PDF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => exportPackagePDF(resume)}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow"
+                >
+                  <Package className="h-3.5 w-3.5" /> Export Package
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -192,10 +240,17 @@ function Builder() {
             >
               <Settings2 className="h-3.5 w-3.5" /> Design
             </button>
+            <button
+              type="button"
+              onClick={() => setTab("cover-letter")}
+              className={`flex-1 inline-flex items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-medium ${tab === "cover-letter" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent/40"}`}
+            >
+              <FileText className="h-3.5 w-3.5" /> Cover Letter
+            </button>
           </div>
 
           <div className="max-h-[calc(100vh-180px)] space-y-3 overflow-y-auto pr-1">
-            {tab === "content" ? (
+            {tab === "content" && (
               <>
                 <PersonalSection resume={resume} update={update} />
                 <SummarySection resume={resume} update={update} />
@@ -207,9 +262,9 @@ function Builder() {
                 <LanguagesSection resume={resume} update={update} />
                 <ReferencesSection resume={resume} update={update} />
               </>
-            ) : (
-              <CustomizationPanel resume={resume} update={update} />
             )}
+            {tab === "design" && <CustomizationPanel resume={resume} update={update} />}
+            {tab === "cover-letter" && <CoverLetterSection resume={resume} update={update} />}
           </div>
         </div>
 
@@ -217,22 +272,19 @@ function Builder() {
         <div className="relative">
           <div className="rounded-2xl glass p-2 sm:p-4 shadow-elegant">
             <div className="mb-2 text-center text-xs text-muted-foreground">
-              A4 · {resume.customization.template.replace(/-/g, " ")} · Print preview is exact
+              {isCoverLetter
+                ? `Cover Letter · ${resume.customization.template.replace(/-/g, " ")}`
+                : `A4 · ${resume.customization.template.replace(/-/g, " ")} · Print preview is exact`}
             </div>
             {/* Measure available width so scale never overflows the container */}
             <div ref={previewContainerRef} className="flex items-start justify-center">
               {/* Clip container: exactly the scaled A4 footprint, no overflow */}
               <div
-                style={{
-                  position: "relative",
-                  width: A4_PX * scale,
-                  height: A4_H_PX * scale + 20,
-                  overflow: "hidden",
-                  flexShrink: 0,
-                }}
+                ref={clipRef}
+                className="relative shrink-0 overflow-hidden w-[var(--clip-w)] h-[var(--clip-h)]"
               >
                 <motion.div
-                  key={size}
+                  key={`${size}-${tab}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
@@ -245,7 +297,11 @@ function Builder() {
                     transformOrigin: "top left",
                   }}
                 >
-                  <Template resume={resume} />
+                  {isCoverLetter ? (
+                    <CoverLetterTemplate resume={resume} />
+                  ) : (
+                    <Template resume={resume} />
+                  )}
                 </motion.div>
               </div>
             </div>
@@ -253,9 +309,12 @@ function Builder() {
         </div>
       </div>
 
-      {/* Hidden full-resolution clone for printing */}
+      {/* Hidden full-resolution clones for PDF export */}
       <div id="resume-print" className="hidden print:block">
         <Template resume={resume} />
+      </div>
+      <div id="cover-letter-print" className="hidden">
+        <CoverLetterTemplate resume={resume} />
       </div>
     </div>
   );

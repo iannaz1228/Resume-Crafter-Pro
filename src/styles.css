@@ -224,6 +224,29 @@
   print-color-adjust: exact;
 }
 
+/* Prevent text overflow in all A4 page templates (resume + cover letter) */
+.resume-page {
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Long-text nodes inside templates must wrap, never scroll */
+.resume-page p,
+.resume-page div,
+.resume-page span,
+.resume-page li {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Pre-wrap text (descriptions, summaries) should break long runs */
+.resume-text-wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 /* html2canvas cannot parse oklch(), so export the resume in a legacy color scope. */
 .pdf-export-mode,
 .pdf-export-mode body {

@@ -44,7 +44,7 @@ function Field({
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           rows={3}
-          className="w-full min-h-[4.5rem] resize-none overflow-hidden rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none transition-colors focus:border-primary"
+          className="w-full min-h-[4.5rem] resize-none overflow-hidden rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none transition-colors focus:border-primary whitespace-pre-wrap [overflow-wrap:anywhere] break-words"
         />
       ) : (
         <input
