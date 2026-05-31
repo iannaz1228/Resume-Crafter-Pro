@@ -143,16 +143,16 @@ function SkillsBlock({ r, accentColor, dark = false }: { r: Resume; accentColor:
 
   // bars
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {visible.map((s) => (
         <div key={s.id}>
-          <div className="flex justify-between text-[11px]">
+          <div className="mb-1 flex justify-between text-[11px]">
             <span>{s.name}</span>
             {c.showSkillLevels && <span className="opacity-70">{s.level}%</span>}
           </div>
-          <div className="h-1 w-full rounded" style={{ background: dark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.08)" }}>
+          <div className="h-1.5 w-full rounded" style={{ background: dark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.08)" }}>
             <div
-              className="h-1 rounded"
+              className="h-1.5 rounded"
               style={{ width: `${s.level}%`, background: accentColor }}
             />
           </div>

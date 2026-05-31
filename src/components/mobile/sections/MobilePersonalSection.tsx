@@ -90,13 +90,13 @@ export function MobilePersonalSection({ resume, update }: Props) {
           label="LinkedIn URL"
           value={p.linkedin}
           onChange={(v) => set("linkedin", v)}
-          placeholder="linkedin.com/in/alexmorgan"
+          placeholder="linkedin.com/in/iannaz1228"
         />
         <Field
           label="GitHub URL"
           value={p.github}
           onChange={(v) => set("github", v)}
-          placeholder="github.com/alexmorgan"
+          placeholder="github.com/iannaz1228"
         />
         <Field
           label="Portfolio / Website"
@@ -105,7 +105,7 @@ export function MobilePersonalSection({ resume, update }: Props) {
             set("portfolio", v);
             set("website", v);
           }}
-          placeholder="alexmorgan.design"
+          placeholder="infosyscoreteam.com"
         />
       </div>
     </div>
