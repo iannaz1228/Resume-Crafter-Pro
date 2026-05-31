@@ -1577,7 +1577,7 @@ export function BlueWave({ resume }: TemplateProps) {
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 28, background: "#fff", borderTopLeftRadius: 50, borderTopRightRadius: 50 }} />
           </div>
 
-          <div style={{ padding: "10px 14mm 14mm", display: "flex", flexDirection: "column", gap: c.sectionSpacing }}>
+          <div style={{ padding: "14mm", display: "flex", flexDirection: "column", gap: c.sectionSpacing }}>
             {mainKeys.map((k) =>
               resume.sectionOrder.includes(k)
                 ? renderWithCustomHeading(k, resume, navy, sky, (label) => (
