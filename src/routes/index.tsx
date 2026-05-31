@@ -11,12 +11,11 @@ import {
   Eye,
   CheckCircle2,
   Zap,
-  Github,
-  Facebook,
-  Mail,
 } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
+import { Footer } from "@/components/Footer";
 import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
+import { UseTemplateButton } from "@/components/UseTemplateButton";
 import { TEMPLATE_LIST, TEMPLATE_MAP } from "@/components/resume-templates";
 import { createMockResume } from "@/lib/mock-resume";
 import type { TemplateId } from "@/lib/resume-types";
@@ -192,10 +191,12 @@ function Landing() {
               const mockResume = createMockResume(t.id);
               return (
                 <div key={t.id} className="group relative overflow-hidden rounded-2xl glass flex flex-col">
-                  <div className="relative h-56 bg-muted overflow-hidden border-b border-border/60 flex items-center justify-center">
+                  <div className="flex h-56 items-start justify-center overflow-hidden border-b border-border/60 bg-muted">
                     {Template && (
-                      <div className="scale-[0.25] origin-center">
-                        <Template resume={mockResume} />
+                      <div className="relative h-[281px] w-[205px] shrink-0 overflow-hidden">
+                        <div className="absolute left-0 top-0 w-[820px] origin-top-left scale-[0.25]">
+                          <Template resume={mockResume} />
+                        </div>
                       </div>
                     )}
                   </div>
@@ -206,17 +207,18 @@ function Landing() {
                     </div>
                     <div className="flex gap-2 pt-3">
                       <button
+                        type="button"
                         onClick={() => setPreviewModal({ templateId: t.id, templateName: t.name })}
                         className="flex-1 rounded-lg bg-secondary/50 px-2.5 py-1.5 text-xs font-medium text-secondary-foreground hover:bg-secondary transition-colors"
                       >
                         Preview
                       </button>
-                      <Link
-                        to="/dashboard"
+                      <UseTemplateButton
+                        templateId={t.id}
                         className="flex-1 rounded-lg bg-primary/10 px-2.5 py-1.5 text-xs font-medium text-primary hover:bg-primary/20 transition-colors text-center"
                       >
                         Use
-                      </Link>
+                      </UseTemplateButton>
                     </div>
                   </div>
                 </div>
@@ -249,73 +251,7 @@ function Landing() {
         </div>
       </section>
 
-      <footer className="border-t border-border/60 bg-gradient-to-b from-background to-muted/30 px-6 py-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid gap-8 md:grid-cols-3">
-            {/* Brand */}
-            <div>
-              <h3 className="font-display font-bold">ResumeCraft Pro</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Build stunning, ATS-friendly resumes in minutes.
-              </p>
-              <div className="mt-3 flex gap-2">
-                <a
-                  href="https://github.com/iannaz1228"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="GitHub"
-                  className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent/40 transition-colors"
-                >
-                  <Github className="h-3.5 w-3.5" />
-                </a>
-                <a
-                  href="https://www.facebook.com/share/1GqFHJHUAy/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Facebook"
-                  className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent/40 transition-colors"
-                >
-                  <Facebook className="h-3.5 w-3.5" />
-                </a>
-                <a
-                  href="mailto:iannaz1228@gmail.com"
-                  aria-label="Email"
-                  className="inline-flex items-center justify-center h-8 w-8 rounded-md border border-border hover:bg-accent/40 transition-colors"
-                >
-                  <Mail className="h-3.5 w-3.5" />
-                </a>
-              </div>
-            </div>
-
-            {/* Product */}
-            <div>
-              <h4 className="text-sm font-semibold text-foreground">Product</h4>
-              <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
-                <li><a href="#templates" onClick={(e) => { e.preventDefault(); document.getElementById("templates")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-foreground transition-colors">Templates</a></li>
-                <li><a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById("features")?.scrollIntoView({ behavior: "smooth" }); }} className="hover:text-foreground transition-colors">Features</a></li>
-                <li><Link to="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link></li>
-              </ul>
-            </div>
-
-            {/* Contact */}
-            <div>
-              <h4 className="text-sm font-semibold text-foreground">Contact</h4>
-              <div className="mt-2 text-xs">
-                <p className="font-medium text-foreground">Ian Magistrado Naz</p>
-                <a href="mailto:iannaz1228@gmail.com" className="text-primary hover:underline">iannaz1228@gmail.com</a>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 border-t border-border/40 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-            <div>© {new Date().getFullYear()} ResumeCraft Pro · Built for ambitious careers.</div>
-            <div className="flex gap-4">
-              <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-              <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {previewModal && (
         <TemplatePreviewModal

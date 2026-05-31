@@ -1,5 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useIsMobile } from "@/hooks/use-device";
+import { MobileEditor } from "@/components/mobile/MobileEditor";
+import { exportResumeToPDF } from "@/lib/export-pdf";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -46,6 +49,7 @@ type PreviewSize = "desktop" | "tablet" | "mobile";
 function Builder() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const hydrated = usePersistHydration(useResumeStore);
   const resume = useResumeStore((s) => s.resumes[id]);
   const updateResume = useResumeStore((s) => s.updateResume);
@@ -70,6 +74,19 @@ function Builder() {
     return () => clearTimeout(t);
   }, [resume]);
 
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(800);
+
+  useEffect(() => {
+    const el = previewContainerRef.current;
+    if (!el) return;
+    const update = () => setContainerWidth(el.clientWidth);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const update = useCallback(
     (fn: (r: Resume) => Resume) => updateResume(id, fn),
     [id, updateResume],
@@ -92,76 +109,21 @@ function Builder() {
 
   if (!resume || !Template) return null;
 
-  const exportPDF = async () => {
-    const node = document.getElementById("resume-print");
-    if (!node) {
-      toast.error("Preview not ready");
-      return;
-    }
-    toast.loading("Generating PDF…", { id: "pdf" });
-    const previousStyle = node.getAttribute("style");
-    const wasHidden = node.classList.contains("hidden");
-    document.documentElement.classList.add("pdf-export-mode");
-    try {
-      const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-        import("html2canvas"),
-        import("jspdf"),
-      ]);
-      // Make hidden clone visible off-screen so html2canvas can rasterize it
-      node.setAttribute(
-        "style",
-        "position:fixed;left:-10000px;top:0;display:block;background:#fff;",
-      );
-      // force visibility class
-      node.classList.remove("hidden");
+  // Mobile gets its own full-screen editor — no desktop chrome
+  if (isMobile) {
+    return <MobileEditor resume={resume} update={update} />;
+  }
 
-      const canvas = await html2canvas(node, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        windowWidth: node.scrollWidth,
-        windowHeight: node.scrollHeight,
-      });
-
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pageW = 210;
-      const pageH = 297;
-      const imgH = (canvas.height * pageW) / canvas.width;
-      const img = canvas.toDataURL("image/jpeg", 0.95);
-
-      if (imgH <= pageH) {
-        pdf.addImage(img, "JPEG", 0, 0, pageW, imgH);
-      } else {
-        // multi-page slicing
-        let remaining = imgH;
-        let y = 0;
-        while (remaining > 0) {
-          pdf.addImage(img, "JPEG", 0, y, pageW, imgH);
-          remaining -= pageH;
-          if (remaining > 0) {
-            pdf.addPage();
-            y -= pageH;
-          }
-        }
-      }
-      pdf.save(`${resume.name.replace(/\s+/g, "_")}.pdf`);
-      toast.success("PDF downloaded", { id: "pdf" });
-    } catch (err) {
-      console.error(err);
-      toast.error("PDF export failed", { id: "pdf" });
-    } finally {
-      if (previousStyle === null) node.removeAttribute("style");
-      else node.setAttribute("style", previousStyle);
-      if (wasHidden) node.classList.add("hidden");
-      else node.classList.remove("hidden");
-      document.documentElement.classList.remove("pdf-export-mode");
-    }
-  };
+  const exportPDF = () =>
+    exportResumeToPDF("resume-print", `${resume.name.replace(/\s+/g, "_")}.pdf`);
 
   const printPDF = () => window.print();
 
-  const previewWidth = 820; // full A4 width for scaling calculation
-  const scale = size === "desktop" ? 0.78 : size === "tablet" ? 0.60 : 0.55; // increased mobile scale from 0.42 to 0.55
+  const A4_PX = 820;
+  const A4_H_PX = 297 * 3.78; // ~1122px
+  const targetScale = size === "desktop" ? 0.78 : size === "tablet" ? 0.60 : 0.42;
+  const fitScale = Math.max(0.2, containerWidth / A4_PX);
+  const scale = Math.min(targetScale, fitScale);
 
   return (
     <div className="min-h-screen bg-background bg-gradient-hero">
@@ -212,7 +174,7 @@ function Builder() {
       </div>
 
       {/* Workspace */}
-      <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-3 px-2 py-6 sm:gap-6 sm:px-4 lg:grid-cols-[480px_1fr]">
+      <div className="mx-auto grid max-w-[1600px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[480px_1fr]">
         {/* Left panel */}
         <div className="no-print space-y-3">
           <div className="flex gap-1 rounded-lg border border-border bg-card p-1">
@@ -253,25 +215,39 @@ function Builder() {
 
         {/* Right preview */}
         <div className="relative">
-          <div className="max-h-[calc(100vh-180px)] overflow-y-auto rounded-2xl glass p-4 shadow-elegant">
-            <div className="mb-3 text-center text-xs text-muted-foreground">
+          <div className="rounded-2xl glass p-2 sm:p-4 shadow-elegant">
+            <div className="mb-2 text-center text-xs text-muted-foreground">
               A4 · {resume.customization.template.replace(/-/g, " ")} · Print preview is exact
             </div>
-            <div className="mx-auto flex items-start justify-center">
-              <motion.div
-                key={size}
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
+            {/* Measure available width so scale never overflows the container */}
+            <div ref={previewContainerRef} className="flex items-start justify-center">
+              {/* Clip container: exactly the scaled A4 footprint, no overflow */}
+              <div
                 style={{
-                  width: previewWidth,
-                  transform: `scale(${scale})`,
-                  transformOrigin: "top center",
-                  height: 297 * 3.78 * scale + 40,
+                  position: "relative",
+                  width: A4_PX * scale,
+                  height: A4_H_PX * scale + 20,
+                  overflow: "hidden",
+                  flexShrink: 0,
                 }}
               >
-                <Template resume={resume} />
-              </motion.div>
+                <motion.div
+                  key={size}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: A4_PX,
+                    transform: `scale(${scale})`,
+                    transformOrigin: "top left",
+                  }}
+                >
+                  <Template resume={resume} />
+                </motion.div>
+              </div>
             </div>
           </div>
         </div>

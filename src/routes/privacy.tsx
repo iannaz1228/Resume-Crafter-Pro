@@ -104,8 +104,9 @@ function PrivacyPage() {
               If you have any questions about this Privacy Policy, please contact us at:
             </p>
             <ul className="mt-4 space-y-2 text-muted-foreground">
+              <li><strong className="text-foreground">Email:</strong> <a href="mailto:iannaz1228@gmail.com" className="text-primary hover:underline">iannaz1228@gmail.com</a></li>
               <li><strong className="text-foreground">GitHub:</strong> <a href="https://github.com/iannaz1228" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">github.com/iannaz1228</a></li>
-              <li><strong className="text-foreground">Facebook:</strong> <a href="https://www.facebook.com/share/1GqFHJHUAy/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">facebook.com</a></li>
+              <li><strong className="text-foreground">Facebook:</strong> <a href="https://www.facebook.com/profile.php?id=61588589180451" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">facebook.com/Ian Naz</a></li>
             </ul>
           </section>
         </div>
