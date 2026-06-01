@@ -127,6 +127,27 @@ export function MobilePersonalSection({ resume, update }: Props) {
           </div>
         </div>
 
+        {/* Size slider */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground">Photo Size</span>
+            <span className="text-xs font-semibold text-foreground">{p.photoSize ?? 80}px</span>
+          </div>
+          <input
+            type="range"
+            aria-label="Photo size"
+            min={48}
+            max={160}
+            value={p.photoSize ?? 80}
+            onChange={(e) => update((r) => ({ ...r, personal: { ...r.personal, photoSize: Number(e.target.value) } }))}
+            className="w-full accent-primary"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground/60">
+            <span>Small</span>
+            <span>Large</span>
+          </div>
+        </div>
+
         {/* Action row */}
         <div className="flex gap-2">
           <button
