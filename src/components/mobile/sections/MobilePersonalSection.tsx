@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import { Camera, X } from "lucide-react";
 import type { Resume } from "@/lib/resume-types";
 
 interface Props {
@@ -32,11 +34,27 @@ function Field({
   );
 }
 
+const SHAPES = [
+  { value: "circle",  label: "Circle" },
+  { value: "rounded", label: "Rounded" },
+  { value: "square",  label: "Square" },
+] as const;
+
 export function MobilePersonalSection({ resume, update }: Props) {
   const p = resume.personal;
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const set = (key: keyof typeof p, value: string) =>
+  const set = (key: keyof typeof p, value: string | boolean) =>
     update((r) => ({ ...r, personal: { ...r.personal, [key]: value } }));
+
+  const handlePhoto = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => set("photo", e.target?.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const shapeClass =
+    p.photoShape === "circle" ? "rounded-full" : p.photoShape === "rounded" ? "rounded-xl" : "rounded-sm";
 
   return (
     <div className="space-y-5 px-4 pb-6">
@@ -45,6 +63,105 @@ export function MobilePersonalSection({ resume, update }: Props) {
         <p className="mt-0.5 text-xs text-muted-foreground">Your name, title, and contact details</p>
       </div>
 
+      {/* ── Photo upload ─────────────────────────────────────────── */}
+      <div className="space-y-4 rounded-2xl border border-border bg-card p-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Profile Photo
+        </p>
+
+        <div className="flex items-center gap-4">
+          {/* Preview / tap-to-upload */}
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className={`relative h-[72px] w-[72px] shrink-0 overflow-hidden bg-muted transition-opacity active:opacity-70 ${shapeClass}`}
+            aria-label="Upload photo"
+          >
+            {p.photo ? (
+              <img src={p.photo} alt="Profile" className="h-full w-full object-cover" />
+            ) : (
+              <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground">
+                <Camera className="h-5 w-5" />
+                <span className="text-[9px] font-medium">Upload</span>
+              </span>
+            )}
+          </button>
+
+          <div className="flex-1 space-y-3">
+            {/* Show / hide toggle */}
+            <label className="flex cursor-pointer items-center justify-between">
+              <span className="text-sm text-foreground">Show photo on resume</span>
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={!!p.showPhoto}
+                onChange={(e) => set("showPhoto", e.target.checked)}
+              />
+              <span
+                aria-hidden="true"
+                className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${p.showPhoto ? "bg-primary" : "bg-muted"}`}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${p.showPhoto ? "translate-x-4" : "translate-x-0.5"}`}
+                />
+              </span>
+            </label>
+
+            {/* Shape picker */}
+            <div className="flex gap-1.5">
+              {SHAPES.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => set("photoShape", value)}
+                  className={`flex-1 rounded-lg py-1 text-[11px] font-medium transition-colors ${
+                    p.photoShape === value
+                      ? "bg-primary/10 text-primary"
+                      : "border border-border text-muted-foreground hover:bg-accent"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Action row */}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary px-3.5 py-2.5 text-xs font-semibold text-primary-foreground"
+          >
+            <Camera className="h-3.5 w-3.5" />
+            {p.photo ? "Change Photo" : "Upload Photo"}
+          </button>
+          {p.photo && (
+            <button
+              type="button"
+              onClick={() => set("photo", "")}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-border px-3.5 py-2.5 text-xs font-medium text-destructive"
+              aria-label="Remove photo"
+            >
+              <X className="h-3.5 w-3.5" />
+              Remove
+            </button>
+          )}
+        </div>
+
+        {/* Hidden file input — accepts gallery + camera on mobile */}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          title="Upload profile photo"
+          className="hidden"
+          onChange={(e) => e.target.files?.[0] && handlePhoto(e.target.files[0])}
+        />
+      </div>
+
+      {/* ── Name & title ─────────────────────────────────────────── */}
       <div className="space-y-4 rounded-2xl border border-border bg-card p-4">
         <Field
           label="Full Name"
@@ -60,6 +177,7 @@ export function MobilePersonalSection({ resume, update }: Props) {
         />
       </div>
 
+      {/* ── Contact ──────────────────────────────────────────────── */}
       <div className="space-y-4 rounded-2xl border border-border bg-card p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Contact</p>
         <Field
@@ -84,19 +202,20 @@ export function MobilePersonalSection({ resume, update }: Props) {
         />
       </div>
 
+      {/* ── Online ───────────────────────────────────────────────── */}
       <div className="space-y-4 rounded-2xl border border-border bg-card p-4">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Online</p>
         <Field
           label="LinkedIn URL"
           value={p.linkedin}
           onChange={(v) => set("linkedin", v)}
-          placeholder="linkedin.com/in/iannaz1228"
+          placeholder="linkedin.com/in/yourname"
         />
         <Field
           label="GitHub URL"
           value={p.github}
           onChange={(v) => set("github", v)}
-          placeholder="github.com/iannaz1228"
+          placeholder="github.com/yourname"
         />
         <Field
           label="Portfolio / Website"
@@ -105,7 +224,7 @@ export function MobilePersonalSection({ resume, update }: Props) {
             set("portfolio", v);
             set("website", v);
           }}
-          placeholder="infosyscoreteam.com"
+          placeholder="yourwebsite.com"
         />
       </div>
     </div>
